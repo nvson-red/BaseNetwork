@@ -23,8 +23,8 @@ enum HTTPMethod: String {
     case delete = "DELETE"
 }
 
-class BaseNetwork {
-    static let shared = BaseNetwork()
+class NetworkService {
+    static let shared = NetworkService()
     
     func request<T: Decodable>(endpoint: APIEndpoint,
                                headers: [String: String] = [:],

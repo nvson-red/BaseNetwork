@@ -24,33 +24,37 @@ struct Address: Codable {
     let zipcode: String
 }
 
-class ViewController: UIViewController {
+class ViewController: BaseViewController {
 
     @IBOutlet weak var labelUserName: UILabel!
     private var viewModel = UserViewModel()
-    private var cancellables = Set<AnyCancellable>()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .red
-        
-        viewModel.fetchUser()
+        fetchUserData()
         bindViewModel()
     }
     
+    private func fetchUserData() {
+        showLoading() // Hiện loading khi bắt đầu fetch dữ liệu
+        viewModel.fetchUser()
+    }
+    
     private func bindViewModel() {
-        viewModel.$user
-            .compactMap({ $0?.username })
-            .receive(on: DispatchQueue.main)
-            .assign(to: \.text, on: labelUserName)
-            .store(in: &cancellables)
-        
+    
 //        viewModel.$user
+//            .compactMap({ $0?.username })
 //            .receive(on: DispatchQueue.main)
-//            .sink { [weak self] user in
-//                self?.labelUserName.text = user?.username
-//            }
+//            .assign(to: \.text, on: labelUserName)
 //            .store(in: &cancellables)
+        
+        viewModel.$user
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] user in
+                self?.labelUserName.text = user?.username
+                self?.hideLoading()
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -60,7 +64,7 @@ class UserViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     func fetchUser() {
-        BaseNetwork.shared.request(endpoint: .getUser)
+        NetworkService.shared.request(endpoint: .getUser)
             .sink { completion in
                 switch completion {
                 case .failure(let error):
